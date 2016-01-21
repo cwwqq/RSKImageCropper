@@ -34,6 +34,8 @@ static const CGFloat kPhotoFrameViewPadding = 2.0f;
 @property (strong, nonatomic) UIButton *addPhotoButton;
 @property (assign, nonatomic) BOOL didSetupConstraints;
 
+@property (strong, nonatomic) UIImageView *showView;
+
 @end
 
 @implementation RSKExampleViewController
@@ -64,6 +66,10 @@ static const CGFloat kPhotoFrameViewPadding = 2.0f;
     // ---------------------------
     // Add the button "add photo".
     // ---------------------------
+    self.showView = [[UIImageView alloc]init];
+    self.showView.frame = self.view.frame;
+    self.showView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.view addSubview:self.showView];
     
     self.addPhotoButton = [[UIButton alloc] init];
     self.addPhotoButton.backgroundColor = [UIColor whiteColor];
@@ -83,6 +89,9 @@ static const CGFloat kPhotoFrameViewPadding = 2.0f;
     // ----------------
     
     [self.view setNeedsUpdateConstraints];
+    
+    
+
 }
 
 - (void)updateViewConstraints
@@ -149,7 +158,7 @@ static const CGFloat kPhotoFrameViewPadding = 2.0f;
 - (void)onAddPhotoButtonTouch:(UIButton *)sender
 {
     UIImage *photo = [UIImage imageNamed:@"photo"];
-    RSKImageCropViewController *imageCropVC = [[RSKImageCropViewController alloc] initWithImage:photo cropMode:RSKImageCropModeCircle];
+    RSKImageCropViewController *imageCropVC = [[RSKImageCropViewController alloc] initWithImage:photo cropMode:RSKImageCropModeSquare];
     imageCropVC.delegate = self;
     [self.navigationController pushViewController:imageCropVC animated:YES];
 }
@@ -163,7 +172,11 @@ static const CGFloat kPhotoFrameViewPadding = 2.0f;
 
 - (void)imageCropViewController:(RSKImageCropViewController *)controller didCropImage:(UIImage *)croppedImage usingCropRect:(CGRect)cropRect
 {
-    [self.addPhotoButton setImage:croppedImage forState:UIControlStateNormal];
+    //[self.addPhotoButton setImage:croppedImage forState:UIControlStateNormal];
+    
+    [self.showView setImage:croppedImage];
+    
+    
     [self.navigationController popViewControllerAnimated:YES];
 }
 
