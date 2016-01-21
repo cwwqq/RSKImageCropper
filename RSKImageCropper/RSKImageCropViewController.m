@@ -30,6 +30,7 @@
 #import "CGGeometry+RSKImageCropper.h"
 #import "UIApplication+RSKImageCropper.h"
 
+
 static const CGFloat kPortraitCircleMaskRectInnerEdgeInset = 15.0f;
 static const CGFloat kPortraitSquareMaskRectInnerEdgeInset = 20.0f;
 static const CGFloat kPortraitMoveAndScaleLabelVerticalMargin = 64.0f;
@@ -50,6 +51,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 #else
     static const CGFloat kK = 0;
 #endif
+
+#define MyPointRect self.TheRect
+
 
 @interface RSKImageCropViewController () <UIGestureRecognizerDelegate>
 
@@ -72,12 +76,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 @property (strong, nonatomic) UIButton *cancelButton;
 @property (strong, nonatomic) UIButton *chooseButton;
 
-
-#pragma mark - ADD Myself
-@property (strong, nonatomic) UIButton *dragbutton;
-
-#pragma mark -
-
 @property (strong, nonatomic) UITapGestureRecognizer *doubleTapGestureRecognizer;
 @property (strong, nonatomic) UIRotationGestureRecognizer *rotationGestureRecognizer;
 
@@ -85,6 +83,37 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 @property (strong, nonatomic) NSLayoutConstraint *moveAndScaleLabelTopConstraint;
 @property (strong, nonatomic) NSLayoutConstraint *cancelButtonBottomConstraint;
 @property (strong, nonatomic) NSLayoutConstraint *chooseButtonBottomConstraint;
+
+
+#pragma mark - 新添加功能 -- 自定义调整裁剪框
+@property (strong, nonatomic) UIView *lineTop;
+@property (strong, nonatomic) UIView *lineRight;
+@property (strong, nonatomic) UIView *lineBottom;
+@property (strong, nonatomic) UIView *lineLeft;
+
+@property (strong, nonatomic) UIView *leftTop;
+@property (strong, nonatomic) UIView *rightTop;
+@property (strong, nonatomic) UIView *rightBottom;
+@property (strong, nonatomic) UIView *leftBottom;
+
+@property (assign, nonatomic) CGFloat scrollDefaultx;
+@property (assign, nonatomic) CGFloat scrollDefaulty;
+
+@property (assign, nonatomic) CGFloat minPicWidth;
+@property (assign, nonatomic) CGFloat minPicHight;
+
+@property (assign, nonatomic) CGFloat minEdgeWidth;
+@property (assign, nonatomic) CGFloat minEdgeHight;
+
+@property (assign, nonatomic) CGFloat cornerLineK;
+@property (assign, nonatomic) CGFloat cornerLineB;
+@property (assign, nonatomic) CGFloat cornerLineB2;
+
+@property (assign, nonatomic) CGFloat defaultx;
+@property (assign, nonatomic) CGFloat defaulty;
+
+#pragma mark -
+
 
 @end
 
@@ -101,6 +130,12 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _maskLayerLineWidth = 1.0;
         _rotationEnabled = NO;
         _cropMode = RSKImageCropModeCircle;
+        _minEdgeWidth = 15;
+        _minEdgeHight = 100;
+        _minPicWidth = 100;
+        _minPicHight = 100;
+        _defaultx = 20;
+        _defaulty = 89;
     }
     return self;
 }
@@ -197,6 +232,11 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     [self layoutImageScrollView];
     [self layoutOverlayView];
     [self updateMaskPath];
+    
+    //新添加裁剪框
+    [self setDragable];
+    
+    
     [self.view setNeedsUpdateConstraints];
 }
 
@@ -376,15 +416,45 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     return _rotationGestureRecognizer;
 }
 
+
+//- (CGRect)cropRect
+//{
+//    CGRect cropRect = CGRectZero;
+//    float zoomScale = 1.0 / self.imageScrollView.zoomScale;
+//
+//    cropRect.origin.x = round(self.imageScrollView.contentOffset.x * zoomScale);
+//    cropRect.origin.y = round(self.imageScrollView.contentOffset.y * zoomScale);
+//    cropRect.size.width = CGRectGetWidth(self.imageScrollView.bounds) * zoomScale;
+//    cropRect.size.height = CGRectGetHeight(self.imageScrollView.bounds) * zoomScale;
+//
+//    CGFloat width = CGRectGetWidth(cropRect);
+//    CGFloat height = CGRectGetHeight(cropRect);
+//    CGFloat ceilWidth = ceil(width);
+//    CGFloat ceilHeight = ceil(height);
+//
+//    if (fabs(ceilWidth - width) < pow(10, kK) * RSK_EPSILON * fabs(ceilWidth + width) || fabs(ceilWidth - width) < RSK_MIN ||
+//        fabs(ceilHeight - height) < pow(10, kK) * RSK_EPSILON * fabs(ceilHeight + height) || fabs(ceilHeight - height) < RSK_MIN) {
+//
+//        cropRect.size.width = ceilWidth;
+//        cropRect.size.height = ceilHeight;
+//    } else {
+//        cropRect.size.width = floor(width);
+//        cropRect.size.height = floor(height);
+//    }
+//
+//    return cropRect;
+//}
+
+/*把剪切时候的Rect改成自定义Rect*/
 - (CGRect)cropRect
 {
     CGRect cropRect = CGRectZero;
     float zoomScale = 1.0 / self.imageScrollView.zoomScale;
-    
-    cropRect.origin.x = round(self.imageScrollView.contentOffset.x * zoomScale);
-    cropRect.origin.y = round(self.imageScrollView.contentOffset.y * zoomScale);
-    cropRect.size.width = CGRectGetWidth(self.imageScrollView.bounds) * zoomScale;
-    cropRect.size.height = CGRectGetHeight(self.imageScrollView.bounds) * zoomScale;
+
+    cropRect.origin.x = round((self.imageScrollView.contentOffset.x + (MyPointRect.origin.x - _defaultx)) * zoomScale);
+    cropRect.origin.y = round((self.imageScrollView.contentOffset.y + (MyPointRect.origin.y - _defaulty)) * zoomScale);
+    cropRect.size.width = (MyPointRect.size.width) * zoomScale;
+    cropRect.size.height = (MyPointRect.size.height) * zoomScale;
     
     CGFloat width = CGRectGetWidth(cropRect);
     CGFloat height = CGRectGetHeight(cropRect);
@@ -475,10 +545,10 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [clipPath appendPath:maskPath];
         clipPath.usesEvenOddFillRule = YES;
         
-        CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
-        pathAnimation.duration = [CATransaction animationDuration];
-        pathAnimation.timingFunction = [CATransaction animationTimingFunction];
-        [self.maskLayer addAnimation:pathAnimation forKey:@"path"];
+//        CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
+//        pathAnimation.duration = [CATransaction animationDuration];
+//        pathAnimation.timingFunction = [CATransaction animationTimingFunction];
+//        [self.maskLayer addAnimation:pathAnimation forKey:@"path"];
         
         self.maskLayer.path = [clipPath CGPath];
     }
@@ -778,6 +848,10 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
                                        (viewHeight - maskSize.height) * 0.5f,
                                        maskSize.width,
                                        maskSize.height);
+            
+            _defaultx = self.maskRect.origin.x;
+            _defaulty = self.maskRect.origin.y;
+            
             break;
         }
         case RSKImageCropModeCustom: {
@@ -922,6 +996,388 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [self.delegate imageCropViewControllerDidCancelCrop:self];
     }
 }
+
+-(void)setDragable {
+    [self.view addSubview:self.leftTop];
+    [self.view addSubview:self.rightTop];
+    [self.view addSubview:self.leftBottom];
+    [self.view addSubview:self.rightBottom];
+    [self.view addSubview:self.lineLeft];
+    [self.view addSubview:self.lineTop];
+    [self.view addSubview:self.lineRight];
+    [self.view addSubview:self.lineBottom];
+    [self resetLineBounds:nil];
+}
+
+-(CGRect)TheRect {
+    return self.maskRect;
+}
+
+-(UIView*)lineLeft{
+    if (!_lineLeft) {
+        _lineLeft = [[UIView alloc]init];
+        _lineLeft.bounds = CGRectMake(0, 0, 25, 25);
+        _lineLeft.center = CGPointMake(_leftTop.center.x, _leftTop.center.y + (_leftBottom.center.y - _leftTop.center.y)/2);
+        //_lineLeft.backgroundColor = [UIColor greenColor];
+        _lineLeft.tag = 1;//左右线为1 用于不改变移动时的Y
+        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        [_lineLeft setUserInteractionEnabled:YES];
+        [_lineLeft addGestureRecognizer:lineGesture];
+        
+    }
+    return _lineLeft;
+}
+
+-(UIView*)lineTop{
+    if (!_lineTop) {
+        _lineTop = [[UIView alloc]init];
+        _lineTop.bounds = CGRectMake(0, 0, 25, 25);
+        _lineTop.center = CGPointMake(_leftTop.center.x + (_rightTop.center.x - _leftTop.center.x)/2,_leftTop.center.y);
+       // _lineTop.backgroundColor = [UIColor blueColor];
+        _lineTop.tag = 2;//上下线为2 用于不改变移动时的x
+        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        [_lineTop setUserInteractionEnabled:YES];
+        [_lineTop addGestureRecognizer:lineGesture];
+    }
+    return _lineTop;
+}
+
+-(UIView*)lineRight{
+    if (!_lineRight) {
+        _lineRight = [[UIView alloc]init];
+        _lineRight.bounds = CGRectMake(0, 0, 25, 25);
+        _lineRight.center = CGPointMake(_rightTop.center.x, _rightTop.center.y + (_rightBottom.center.y - _rightTop.center.y)/2);
+        //_lineRight.backgroundColor = [UIColor blackColor];
+        _lineRight.tag = 1;
+        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        [_lineRight setUserInteractionEnabled:YES];
+        [_lineRight addGestureRecognizer:lineGesture];
+    }
+    return _lineRight;
+}
+
+-(UIView*)lineBottom{
+    if (!_lineBottom) {
+        _lineBottom = [[UIView alloc]init];
+        _lineBottom.bounds = CGRectMake(0, 0, 25, 25);
+        _lineBottom.center = CGPointMake(_leftBottom.center.x + (_rightBottom.center.x - _leftBottom.center.x)/2, _leftBottom.center.y);
+        //_lineBottom.backgroundColor = [UIColor whiteColor];
+        _lineBottom.tag = 2;
+        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        [_lineBottom setUserInteractionEnabled:YES];
+        [_lineBottom addGestureRecognizer:lineGesture];
+    }
+    return _lineBottom;
+}
+
+-(void)handleLinePan:(UIPanGestureRecognizer*)pan {
+    CGPoint point = [pan translationInView:self.view];
+    
+    CGPoint finalpoint = CGPointMake(0, 0);
+    
+    if (pan.view.tag == 1) {//左右线
+        finalpoint = CGPointMake(pan.view.center.x + point.x, pan.view.center.y);
+    }
+    else {
+        finalpoint = CGPointMake(pan.view.center.x, pan.view.center.y + point.y );
+    }
+    
+    if (pan.view == _lineLeft) {
+        if ((finalpoint.x - 0) < _minEdgeWidth) {
+            finalpoint = CGPointMake(0 + _minEdgeWidth, pan.view.center.y);
+        }
+        else if ((_lineRight.center.x - finalpoint.x) < _minPicWidth) {
+            finalpoint = CGPointMake(_lineRight.center.x - _minPicWidth, pan.view.center.y);
+        }
+    }
+    else if (pan.view == _lineRight) {
+        if ((self.view.bounds.size.width - finalpoint.x) < _minEdgeWidth) {
+            finalpoint = CGPointMake(self.view.bounds.size.width - _minEdgeWidth, pan.view.center.y);
+        }
+        else if ((finalpoint.x - _lineLeft.center.x) < _minPicWidth) {
+            finalpoint = CGPointMake(_lineLeft.center.x + _minPicWidth, pan.view.center.y);
+        }
+    }
+    else if (pan.view == _lineTop) {
+        if ((finalpoint.y - 0) < _minEdgeHight) {
+            finalpoint = CGPointMake(pan.view.center.x, _minEdgeHight);
+        }
+        else if ((_lineBottom.center.y - finalpoint.y) < _minPicWidth) {
+            finalpoint = CGPointMake(pan.view.center.x , _lineBottom.center.y - _minPicWidth );
+        }
+    }
+    else if (pan.view == _lineBottom) {
+        if ((self.view.bounds.size.height - finalpoint.y) < _minEdgeHight) {
+            finalpoint = CGPointMake(pan.view.center.x, self.view.bounds.size.height - _minEdgeHight);
+        }
+        else if ((finalpoint.y - _lineTop.center.y) < _minPicHight) {
+            finalpoint = CGPointMake(pan.view.center.x , _lineTop.center.y + _minPicHight );
+        }
+    }
+    
+    pan.view.center = finalpoint;
+
+    [pan setTranslation:CGPointMake(0, 0) inView:self.view];
+    
+    [self FollowMe:pan.view With:pan];
+    [self resetLineBounds:pan.view];
+    [self resetMaskView];
+}
+
+-(void)resetLineBounds:(UIView*)movingView {
+    if (movingView != _lineLeft) {
+        _lineLeft.bounds = CGRectMake(0, 0, 25, _leftBottom.center.y - _leftTop.center.y -25);
+        _lineLeft.center = CGPointMake(_leftTop.center.x, _leftTop.center.y + (_leftBottom.center.y - _leftTop.center.y)/2);
+    }
+    if (movingView != _lineTop) {
+        _lineTop.bounds = CGRectMake(0, 0, _rightTop.center.x - _leftTop.center.x  - 25, 25);
+        _lineTop.center = CGPointMake(_leftTop.center.x + (_rightTop.center.x - _leftTop.center.x)/2,_leftTop.center.y);
+    }
+    
+    if (movingView != _lineRight) {
+        _lineRight.bounds = CGRectMake(0, 0, 25, _rightBottom.center.y - _rightTop.center.y - 25);
+        _lineRight.center = CGPointMake(_rightTop.center.x, _rightTop.center.y + (_rightBottom.center.y - _rightTop.center.y)/2);
+    }
+    
+    if (movingView != _lineBottom) {
+        _lineBottom.bounds = CGRectMake(0, 0, _rightBottom.center.x - _leftBottom.center.x - 25, 25);
+        _lineBottom.center = CGPointMake(_leftBottom.center.x + (_rightBottom.center.x - _leftBottom.center.x)/2, _leftBottom.center.y);
+    }
+    
+}
+
+-(UIView*)leftTop{
+    if (!_leftTop) {
+        _leftTop = [[UIView alloc]init];
+        _leftTop.bounds = CGRectMake(0, 0, 25, 25);
+        _leftTop.center = CGPointMake(MyPointRect.origin.x, MyPointRect.origin.y);
+        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        [_leftTop setUserInteractionEnabled:YES];
+        [_leftTop addGestureRecognizer:pointGesture];
+        
+       // _leftTop.backgroundColor = [UIColor whiteColor];
+    }
+    return _leftTop;
+}
+
+-(UIView*)rightTop{
+    if (!_rightTop) {
+        _rightTop = [[UIView alloc]init];
+        _rightTop.bounds = CGRectMake(0, 0, 25, 25);
+        _rightTop.center = CGPointMake(MyPointRect.origin.x + MyPointRect.size.width, MyPointRect.origin.y);
+        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        [_rightTop setUserInteractionEnabled:YES];
+        [_rightTop addGestureRecognizer:pointGesture];
+        
+       // _rightTop.backgroundColor = [UIColor redColor];
+    }
+    return _rightTop;
+}
+
+-(UIView*)rightBottom{
+    if (!_rightBottom) {
+        _rightBottom = [[UIView alloc]init];
+        _rightBottom.bounds = CGRectMake(0, 0, 25, 25);
+        _rightBottom.center = CGPointMake(MyPointRect.origin.x + MyPointRect.size.width, MyPointRect.origin.y + MyPointRect.size.height);
+        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        [_rightBottom setUserInteractionEnabled:YES];
+        [_rightBottom addGestureRecognizer:pointGesture];
+        
+        //_rightBottom.backgroundColor = [UIColor yellowColor];
+    }
+    return _rightBottom;
+}
+
+-(UIView*)leftBottom{
+    if (!_leftBottom) {
+        _leftBottom = [[UIView alloc]init];
+        _leftBottom.bounds = CGRectMake(0, 0, 25, 25);
+        _leftBottom.center = CGPointMake(MyPointRect.origin.x, MyPointRect.origin.y + MyPointRect.size.height);
+        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        [_leftBottom setUserInteractionEnabled:YES];
+        [_leftBottom addGestureRecognizer:pointGesture];
+        
+       // _leftBottom.backgroundColor = [UIColor blackColor];
+    }
+    return _leftBottom;
+}
+
+-(void)handlePointPan:(UIPanGestureRecognizer*)pan {
+    
+    CGPoint point = [pan translationInView:self.view];
+
+    CGPoint touchfinalpoint = CGPointMake(pan.view.center.x + point.x, pan.view.center.y + point.y);
+
+    CGPoint point1 = CGPointMake(0, 0);
+    CGPoint point2 = CGPointMake(0, 0);
+
+    if (pan.state == UIGestureRecognizerStateBegan) {
+        if ((pan.view == _leftTop) || (pan.view == _rightBottom)) {
+            point1 = _leftTop.center;
+            point2 = _rightBottom.center;
+        }
+        else if((pan.view == _leftBottom) || (pan.view == _rightTop)) {
+            point1 = _leftBottom.center;
+            point2 = _rightTop.center;
+        }
+        _cornerLineK = (point1.y - point2.y)/(point1.x - point2.x);
+        _cornerLineB = ((point1.x * point2.y) - (point2.x * point1.y))/(point1.x - point2.x);
+    }
+    
+    _cornerLineB2 = touchfinalpoint.y + _cornerLineK * touchfinalpoint.x;
+    CGFloat finaly = (_cornerLineB + _cornerLineB2)/2;
+    CGFloat finalx = (finaly - _cornerLineB)/_cornerLineK;
+    CGPoint finalpoint = CGPointMake( (finaly - _cornerLineB)/_cornerLineK, finaly);
+    
+    
+    if (pan.view == _leftTop) {
+        if ((finalpoint.x - 0)<_minEdgeWidth) {
+            finalx = _minEdgeWidth;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if((finalpoint.y - 0)< _minEdgeHight) {
+            finaly = _minEdgeHight;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+        else if((_leftBottom.center.y - finaly)<_minPicHight) {
+            finaly = _leftBottom.center.y - _minPicHight;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+        else if ((_rightTop.center.x - finalx)<_minPicWidth) {
+            finalx = _rightTop.center.x - _minPicWidth;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+    }
+    else if (pan.view == _rightTop) {
+        if ((finalx - _leftTop.center.x) < _minPicWidth) {
+            finalx = _minPicWidth + _leftTop.center.x;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if ((finaly - 0)<_minEdgeHight) {
+            finaly = _minEdgeHight;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+        else if ((self.view.bounds.size.width - finalx)<_minEdgeWidth) {
+            finalx = self.view.bounds.size.width - _minEdgeWidth;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if ((_rightBottom.center.y - finaly)<_minPicHight) {
+            finaly = _rightBottom.center.y - _minPicHight;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+    }
+    else if (pan.view == _leftBottom) {
+        if ((finalpoint.x - 0)<_minEdgeWidth) {
+            finalx = _minEdgeWidth;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if ((finaly - _leftTop.center.y)<_minPicHight) {
+            finaly = _minPicHight + _leftTop.center.y;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+        else if ((_rightBottom.center.x - finalx)<_minPicWidth) {
+            finalx = _rightBottom.center.x - _minPicWidth;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if ((self.view.bounds.size.height - finaly)<_minPicHight) {
+            finaly = self.view.bounds.size.height - _minPicHight;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+    }
+    else if (pan.view == _rightBottom) {
+        if ((finalx - _leftBottom.center.x)<_minPicWidth) {
+            finalx = _minPicWidth + _leftBottom.center.x;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if ((finaly - _rightTop.center.y)<_minPicHight) {
+            finaly = _minPicHight + _rightTop.center.y;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+        else if ((self.view.bounds.size.width - finalx)<_minEdgeWidth) {
+            finalx = self.view.bounds.size.width - _minEdgeWidth;
+            finalpoint = CGPointMake(finalx, finalx*_cornerLineK + _cornerLineB);
+        }
+        else if ((self.view.bounds.size.height - finaly)<_minEdgeHight) {
+            finaly = self.view.bounds.size.height - _minEdgeHight;
+            finalpoint = CGPointMake((finaly - _cornerLineB)/_cornerLineK, finaly);
+        }
+    }
+    
+    pan.view.center = finalpoint;
+
+    [pan setTranslation:CGPointMake(0, 0) inView:self.view];
+    
+    [self FollowMe:pan.view With:pan];
+    [self resetLineBounds:nil];
+    [self resetMaskView];
+}
+
+-(void)FollowMe:(UIView*)point With:(UIPanGestureRecognizer*)pan {
+    
+    if (point == _leftTop) {
+        _rightTop.center = CGPointMake(_rightTop.center.x, _leftTop.center.y);
+        _leftBottom.center = CGPointMake(_leftTop.center.x, _leftBottom.center.y);
+    }
+    else if (point == _rightTop){
+        _leftTop.center = CGPointMake(_leftTop.center.x, _rightTop.center.y);
+        _rightBottom.center = CGPointMake(_rightTop.center.x, _rightBottom.center.y);
+    }
+    else if (point == _leftBottom){
+        _leftTop.center = CGPointMake(_leftBottom.center.x, _leftTop.center.y);
+        _rightBottom.center = CGPointMake(_rightBottom.center.x, _leftBottom.center.y);
+    }
+    else if (point == _rightBottom){
+        _leftBottom.center = CGPointMake(_leftBottom.center.x, _rightBottom.center.y);
+        _rightTop.center = CGPointMake(_rightBottom.center.x, _rightTop.center.y);
+    }
+    else if (point == _lineLeft){
+        _leftTop.center = CGPointMake(_lineLeft.center.x, _leftTop.center.y);
+        _leftBottom.center = CGPointMake(_lineLeft.center.x, _leftBottom.center.y);
+    }
+    else if (point == _lineTop){
+        _leftTop.center = CGPointMake(_leftTop.center.x, _lineTop.center.y);
+        _rightTop.center = CGPointMake(_rightTop.center.x, _lineTop.center.y);
+    }
+    else if (point == _lineRight){
+        _rightTop.center = CGPointMake(_lineRight.center.x, _rightTop.center.y);
+        _rightBottom.center = CGPointMake(_lineRight.center.x, _rightBottom.center.y);
+    }
+    else if (point == _lineBottom){
+        _leftBottom.center = CGPointMake(_leftBottom.center.x, _lineBottom.center.y);
+        _rightBottom.center = CGPointMake(_rightBottom.center.x, _lineBottom.center.y);
+    }
+}
+
+-(void)resetMaskView {
+    self.maskRect = CGRectMake(_leftTop.center.x, _leftTop.center.y, _rightBottom.center.x - _leftTop.center.x, _rightBottom.center.y - _leftTop.center.y);
+    
+    CGRect rect = self.maskRect;
+    
+    CGPoint point1 = CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect));
+    
+    CGPoint point2 = CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect));
+    
+    CGPoint point3 = CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect));
+    
+    CGPoint point4 = CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect));
+    
+    
+    
+    UIBezierPath *rectangle = [UIBezierPath bezierPath];
+    
+    [rectangle moveToPoint:point1];
+    
+    [rectangle addLineToPoint:point2];
+    
+    [rectangle addLineToPoint:point3];
+    
+    [rectangle addLineToPoint:point4];
+    
+    [rectangle closePath];
+    
+    self.maskPath = rectangle;
+}
+
 
 #pragma mark - UIGestureRecognizerDelegate
 
