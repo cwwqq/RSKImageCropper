@@ -1026,7 +1026,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineLeft = [[UIView alloc]init];
         _lineLeft.bounds = CGRectMake(0, 0, 25, 25);
         _lineLeft.center = CGPointMake(_leftTop.center.x, _leftTop.center.y + (_leftBottom.center.y - _leftTop.center.y)/2);
-        _lineLeft.backgroundColor = [UIColor greenColor];
+//        _lineLeft.backgroundColor = [UIColor greenColor];
         _lineLeft.tag = 1;//左右线为1 用于不改变移动时的Y
         UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineLeft setUserInteractionEnabled:YES];
@@ -1041,7 +1041,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineTop = [[UIView alloc]init];
         _lineTop.bounds = CGRectMake(0, 0, 25, 25);
         _lineTop.center = CGPointMake(_leftTop.center.x + (_rightTop.center.x - _leftTop.center.x)/2,_leftTop.center.y);
-        _lineTop.backgroundColor = [UIColor blueColor];
+//        _lineTop.backgroundColor = [UIColor blueColor];
         _lineTop.tag = 2;//上下线为2 用于不改变移动时的x
         UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineTop setUserInteractionEnabled:YES];
@@ -1055,7 +1055,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineRight = [[UIView alloc]init];
         _lineRight.bounds = CGRectMake(0, 0, 25, 25);
         _lineRight.center = CGPointMake(_rightTop.center.x, _rightTop.center.y + (_rightBottom.center.y - _rightTop.center.y)/2);
-        _lineRight.backgroundColor = [UIColor blackColor];
+//        _lineRight.backgroundColor = [UIColor blackColor];
         _lineRight.tag = 1;
         UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineRight setUserInteractionEnabled:YES];
@@ -1069,7 +1069,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineBottom = [[UIView alloc]init];
         _lineBottom.bounds = CGRectMake(0, 0, 25, 25);
         _lineBottom.center = CGPointMake(_leftBottom.center.x + (_rightBottom.center.x - _leftBottom.center.x)/2, _leftBottom.center.y);
-        _lineBottom.backgroundColor = [UIColor whiteColor];
+//        _lineBottom.backgroundColor = [UIColor whiteColor];
         _lineBottom.tag = 2;
         UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineBottom setUserInteractionEnabled:YES];
@@ -1163,7 +1163,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [_leftTop setUserInteractionEnabled:YES];
         [_leftTop addGestureRecognizer:pointGesture];
         
-        _leftTop.backgroundColor = [UIColor whiteColor];
+//        _leftTop.backgroundColor = [UIColor whiteColor];
     }
     return _leftTop;
 }
@@ -1177,7 +1177,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [_rightTop setUserInteractionEnabled:YES];
         [_rightTop addGestureRecognizer:pointGesture];
         
-        _rightTop.backgroundColor = [UIColor redColor];
+//        _rightTop.backgroundColor = [UIColor redColor];
     }
     return _rightTop;
 }
@@ -1191,7 +1191,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [_rightBottom setUserInteractionEnabled:YES];
         [_rightBottom addGestureRecognizer:pointGesture];
         
-        _rightBottom.backgroundColor = [UIColor yellowColor];
+//        _rightBottom.backgroundColor = [UIColor yellowColor];
     }
     return _rightBottom;
 }
@@ -1205,7 +1205,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [_leftBottom setUserInteractionEnabled:YES];
         [_leftBottom addGestureRecognizer:pointGesture];
         
-        _leftBottom.backgroundColor = [UIColor blackColor];
+//        _leftBottom.backgroundColor = [UIColor blackColor];
     }
     return _leftBottom;
 }
