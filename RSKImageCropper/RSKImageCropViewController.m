@@ -330,7 +330,8 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     if (!_imageScrollView) {
         _imageScrollView = [[RSKImageScrollView alloc] init];
         _imageScrollView.clipsToBounds = NO;
-        _imageScrollView.aspectFill = self.avoidEmptySpaceAroundImage;
+        //_imageScrollView.aspectFill = self.avoidEmptySpaceAroundImage;
+        _imageScrollView.aspectFill = NO;
     }
     return _imageScrollView;
 }
