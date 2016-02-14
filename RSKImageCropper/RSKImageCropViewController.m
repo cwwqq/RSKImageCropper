@@ -520,7 +520,8 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     if (_avoidEmptySpaceAroundImage != avoidEmptySpaceAroundImage) {
         _avoidEmptySpaceAroundImage = avoidEmptySpaceAroundImage;
         
-        self.imageScrollView.aspectFill = avoidEmptySpaceAroundImage;
+        //self.imageScrollView.aspectFill = avoidEmptySpaceAroundImage;
+        self.imageScrollView.aspectFill = NO;
     }
 }
 
