@@ -460,8 +460,30 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     CGRect cropRect = CGRectZero;
     float zoomScale = 1.0 / self.imageScrollView.zoomScale;
 
-    cropRect.origin.x = round((self.imageScrollView.contentOffset.x + (MyPointRect.origin.x - _defaultx)) * zoomScale);
-    cropRect.origin.y = round((self.imageScrollView.contentOffset.y + (MyPointRect.origin.y - _defaulty)) * zoomScale);
+    NSLog(@"%f\n,%f\n,%f\n",self.imageScrollView.contentOffset.x,MyPointRect.origin.x,_defaultx);
+    NSLog(@"%f\n,%f\n,%f\n",self.imageScrollView.contentOffset.y,MyPointRect.origin.y,_defaulty);
+    
+    CGSize boundsSize = self.imageScrollView.bounds.size;
+    CGRect frameToCenter = self.imageScrollView.zoomView.frame;
+    
+    if (self.imageScrollView.contentOffset.x == 0) {
+        CGFloat offsetx = (CGRectGetWidth(frameToCenter) - boundsSize.width) * 0.5f;
+        printf("offsetx = %f\n",offsetx);
+        cropRect.origin.x = round((self.imageScrollView.contentOffset.x + offsetx + (MyPointRect.origin.x - _defaultx)) * zoomScale);
+    }
+    else
+    {
+        cropRect.origin.x = round((self.imageScrollView.contentOffset.x + (MyPointRect.origin.x - _defaultx)) * zoomScale);
+    }
+    
+    if (self.imageScrollView.contentOffset.y == 0) {
+        CGFloat offsety = (CGRectGetHeight(frameToCenter) - boundsSize.height) * 0.5f;
+        printf("offsety = %f\n",offsety);
+        cropRect.origin.y = round((self.imageScrollView.contentOffset.y + offsety + (MyPointRect.origin.y - _defaulty)) * zoomScale);
+    }
+    else {
+        cropRect.origin.y = round((self.imageScrollView.contentOffset.y + (MyPointRect.origin.y - _defaulty)) * zoomScale);
+    }
     cropRect.size.width = (MyPointRect.size.width) * zoomScale;
     cropRect.size.height = (MyPointRect.size.height) * zoomScale;
     
@@ -480,6 +502,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         cropRect.size.height = floor(height);
     }
     
+    NSLog(@"%f\n,%f\n,%f\n,%f\n",cropRect.origin.x,cropRect.origin.y,cropRect.size.width,cropRect.size.height);
     return cropRect;
 }
 
