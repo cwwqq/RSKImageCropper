@@ -29,7 +29,7 @@
 #import "UIImage+RSKImageCropper.h"
 #import "CGGeometry+RSKImageCropper.h"
 #import "UIApplication+RSKImageCropper.h"
-
+#import "UISelfPanGestureRecognizer.h"
 
 static const CGFloat kPortraitCircleMaskRectInnerEdgeInset = 15.0f;
 static const CGFloat kPortraitSquareMaskRectInnerEdgeInset = 20.0f;
@@ -1053,8 +1053,10 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineLeft.center = CGPointMake(_leftTop.center.x, _leftTop.center.y + (_leftBottom.center.y - _leftTop.center.y)/2);
 //        _lineLeft.backgroundColor = [UIColor greenColor];
         _lineLeft.tag = 1;//左右线为1 用于不改变移动时的Y
-        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        
+        UISelfPanGestureRecognizer *lineGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineLeft setUserInteractionEnabled:YES];
+        [lineGesture setTransview:self.view];
         [_lineLeft addGestureRecognizer:lineGesture];
         
     }
@@ -1068,8 +1070,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineTop.center = CGPointMake(_leftTop.center.x + (_rightTop.center.x - _leftTop.center.x)/2,_leftTop.center.y);
 //        _lineTop.backgroundColor = [UIColor blueColor];
         _lineTop.tag = 2;//上下线为2 用于不改变移动时的x
-        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        UISelfPanGestureRecognizer *lineGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineTop setUserInteractionEnabled:YES];
+        [lineGesture setTransview:self.view];
         [_lineTop addGestureRecognizer:lineGesture];
     }
     return _lineTop;
@@ -1082,8 +1085,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineRight.center = CGPointMake(_rightTop.center.x, _rightTop.center.y + (_rightBottom.center.y - _rightTop.center.y)/2);
 //        _lineRight.backgroundColor = [UIColor blackColor];
         _lineRight.tag = 1;
-        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        UISelfPanGestureRecognizer *lineGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineRight setUserInteractionEnabled:YES];
+        [lineGesture setTransview:self.view];
         [_lineRight addGestureRecognizer:lineGesture];
     }
     return _lineRight;
@@ -1096,15 +1100,17 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _lineBottom.center = CGPointMake(_leftBottom.center.x + (_rightBottom.center.x - _leftBottom.center.x)/2, _leftBottom.center.y);
 //        _lineBottom.backgroundColor = [UIColor whiteColor];
         _lineBottom.tag = 2;
-        UIPanGestureRecognizer *lineGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
+        UISelfPanGestureRecognizer *lineGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleLinePan:)];
         [_lineBottom setUserInteractionEnabled:YES];
+        [lineGesture setTransview:self.view];
         [_lineBottom addGestureRecognizer:lineGesture];
     }
     return _lineBottom;
 }
 
--(void)handleLinePan:(UIPanGestureRecognizer*)pan {
-    CGPoint point = [pan translationInView:self.view];
+-(void)handleLinePan:(UISelfPanGestureRecognizer*)pan {
+
+    CGPoint point = [pan translationPoint];
     
     CGPoint finalpoint = CGPointMake(0, 0);
     
@@ -1149,10 +1155,8 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     }
     
     pan.view.center = finalpoint;
-
-    [pan setTranslation:CGPointMake(0, 0) inView:self.view];
     
-    [self FollowMe:pan.view With:pan];
+    [self FollowMe:pan.view];
     [self resetLineBounds:pan.view];
     [self resetMaskView];
 }
@@ -1184,8 +1188,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _leftTop = [[UIView alloc]init];
         _leftTop.bounds = CGRectMake(0, 0, 25, 25);
         _leftTop.center = CGPointMake(MyPointRect.origin.x, MyPointRect.origin.y);
-        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        UISelfPanGestureRecognizer *pointGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
         [_leftTop setUserInteractionEnabled:YES];
+        [pointGesture setTransview:self.view];
         [_leftTop addGestureRecognizer:pointGesture];
         
 //        _leftTop.backgroundColor = [UIColor whiteColor];
@@ -1198,8 +1203,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _rightTop = [[UIView alloc]init];
         _rightTop.bounds = CGRectMake(0, 0, 25, 25);
         _rightTop.center = CGPointMake(MyPointRect.origin.x + MyPointRect.size.width, MyPointRect.origin.y);
-        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        UISelfPanGestureRecognizer *pointGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
         [_rightTop setUserInteractionEnabled:YES];
+        [pointGesture setTransview:self.view];
         [_rightTop addGestureRecognizer:pointGesture];
         
 //        _rightTop.backgroundColor = [UIColor redColor];
@@ -1212,8 +1218,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _rightBottom = [[UIView alloc]init];
         _rightBottom.bounds = CGRectMake(0, 0, 25, 25);
         _rightBottom.center = CGPointMake(MyPointRect.origin.x + MyPointRect.size.width, MyPointRect.origin.y + MyPointRect.size.height);
-        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        UISelfPanGestureRecognizer *pointGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
         [_rightBottom setUserInteractionEnabled:YES];
+        [pointGesture setTransview:self.view];
         [_rightBottom addGestureRecognizer:pointGesture];
         
 //        _rightBottom.backgroundColor = [UIColor yellowColor];
@@ -1226,8 +1233,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         _leftBottom = [[UIView alloc]init];
         _leftBottom.bounds = CGRectMake(0, 0, 25, 25);
         _leftBottom.center = CGPointMake(MyPointRect.origin.x, MyPointRect.origin.y + MyPointRect.size.height);
-        UIPanGestureRecognizer *pointGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
+        UISelfPanGestureRecognizer *pointGesture = [[UISelfPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePointPan:)];
         [_leftBottom setUserInteractionEnabled:YES];
+        [pointGesture setTransview:self.view];
         [_leftBottom addGestureRecognizer:pointGesture];
         
 //        _leftBottom.backgroundColor = [UIColor blackColor];
@@ -1235,9 +1243,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     return _leftBottom;
 }
 
--(void)handlePointPan:(UIPanGestureRecognizer*)pan {
-    
-    CGPoint point = [pan translationInView:self.view];
+-(void)handlePointPan:(UISelfPanGestureRecognizer*)pan {
+
+    CGPoint point = [pan translationPoint];
 
     CGPoint touchfinalpoint = CGPointMake(pan.view.center.x + point.x, pan.view.center.y + point.y);
 
@@ -1261,7 +1269,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     CGFloat finaly = (_cornerLineB + _cornerLineB2)/2;
     CGFloat finalx = (finaly - _cornerLineB)/_cornerLineK;
     CGPoint finalpoint = CGPointMake( (finaly - _cornerLineB)/_cornerLineK, finaly);
-    
     
     if (pan.view == _leftTop) {
         if ((finalpoint.x - 0)<_minEdgeWidth) {
@@ -1337,15 +1344,13 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     }
     
     pan.view.center = finalpoint;
-
-    [pan setTranslation:CGPointMake(0, 0) inView:self.view];
     
-    [self FollowMe:pan.view With:pan];
+    [self FollowMe:pan.view];
     [self resetLineBounds:nil];
     [self resetMaskView];
 }
 
--(void)FollowMe:(UIView*)point With:(UIPanGestureRecognizer*)pan {
+-(void)FollowMe:(UIView*)point{
     
     if (point == _leftTop) {
         _rightTop.center = CGPointMake(_rightTop.center.x, _leftTop.center.y);
