@@ -175,7 +175,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
     
-    self.view.backgroundColor = [UIColor blackColor];
+    self.view.backgroundColor = [UIColor colorWithWhite:0.35 alpha:0.3];
     self.view.clipsToBounds = YES;
     
     [self.view addSubview:self.imageScrollView];
@@ -1183,6 +1183,15 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     
 }
 
+-(void)setRoundMask:(UIView*)theView {
+    UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:CGRectMake(5, 5, 5, 5) byRoundingCorners:UIRectCornerAllCorners cornerRadii:CGSizeMake(2,2)];
+    CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+    maskLayer.frame = maskPath.bounds;
+    maskLayer.path = maskPath.CGPath;
+    
+    theView.layer.mask = maskLayer;
+}
+
 -(UIView*)leftTop{
     if (!_leftTop) {
         _leftTop = [[UIView alloc]init];
@@ -1192,8 +1201,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [_leftTop setUserInteractionEnabled:YES];
         [pointGesture setTransview:self.view];
         [_leftTop addGestureRecognizer:pointGesture];
-        
-//        _leftTop.backgroundColor = [UIColor whiteColor];
+        _leftTop.backgroundColor = [UIColor whiteColor];
+        [_leftTop setAlpha:0.6];
+        [self setRoundMask:_leftTop];
     }
     return _leftTop;
 }
@@ -1208,7 +1218,10 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [pointGesture setTransview:self.view];
         [_rightTop addGestureRecognizer:pointGesture];
         
-//        _rightTop.backgroundColor = [UIColor redColor];
+        _rightTop.backgroundColor = [UIColor whiteColor];
+        [_rightTop setAlpha:0.6];
+        [self setRoundMask:_rightTop];
+
     }
     return _rightTop;
 }
@@ -1223,7 +1236,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [pointGesture setTransview:self.view];
         [_rightBottom addGestureRecognizer:pointGesture];
         
-//        _rightBottom.backgroundColor = [UIColor yellowColor];
+        _rightBottom.backgroundColor = [UIColor whiteColor];
+        [_rightBottom setAlpha:0.6];
+        [self setRoundMask:_rightBottom];
     }
     return _rightBottom;
 }
@@ -1238,7 +1253,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [pointGesture setTransview:self.view];
         [_leftBottom addGestureRecognizer:pointGesture];
         
-//        _leftBottom.backgroundColor = [UIColor blackColor];
+        _leftBottom.backgroundColor = [UIColor whiteColor];
+        [_leftBottom setAlpha:0.6];
+        [self setRoundMask:_leftBottom];
     }
     return _leftBottom;
 }
